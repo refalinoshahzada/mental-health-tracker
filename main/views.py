@@ -13,10 +13,10 @@ import datetime
 # Create your views here.
 @login_required(login_url='/login')
 def show_main(request):
-    mood_entries = MoodEntry.objects.all()
+    mood_entries = MoodEntry.objects.filter(user=request.user)
 
     context = {
-        'name': 'Pak Bepe',
+        'name': request.user.username,
         'class': 'PBP D',
         'npm': '2306123456',
         'mood_entries': mood_entries,
@@ -30,7 +30,9 @@ def create_mood_entry(request):
     form = MoodEntryForm(request.POST or None)
 
     if form.is_valid() and request.method == "POST":
-        form.save()
+        mood_entry = form.save(commit=False)
+        mood_entry.user = request.user
+        mood_entry.save()
         return redirect('main:show_main')
 
     context = {'form': form}
